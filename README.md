@@ -48,3 +48,12 @@ Plan your days and weeks.
 - **Events**: Add, edit, and delete events.
 - **Compact UI**: Information-dense design for maximum visibility.
 - **Event Chips**: Modern, minimal event indicators.
+
+### 🔐 Authentication
+
+Secure and flexible user authentication powered by **NextAuth.js**.
+
+- **Multi-Provider Support**: Seamless login with **Google** and **GitHub**.
+- **Credentials Auth**: Standard email/password authentication with secure hashing.
+- **Data Security**: Integrated with **Drizzle ORM** for robust session and user management.
+- **Custom UI**: Beautifully designed, completely custom login and signup experiences.
