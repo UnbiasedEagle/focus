@@ -97,12 +97,6 @@ export function LoginForm() {
                 >
                   Password
                 </Label>
-                <Link
-                  href='#'
-                  className='text-xs text-indigo-600 hover:text-indigo-500 font-medium'
-                >
-                  Forgot?
-                </Link>
               </div>
               <Input
                 id='password'
