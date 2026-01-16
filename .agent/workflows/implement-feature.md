@@ -2,9 +2,11 @@
 description: Implement a new feature or fix a bug following the PR workflow
 ---
 
-1.  **Create a Branch**:
+1.  **Sync and Create Branch**:
 
-    - Always start by checking out a new branch.
+    - Checkout the main branch: `git checkout main`
+    - Pull the latest changes: `git pull origin main`
+    - Create and switch to a new branch.
     - Naming convention: `feature/<short-description>` or `fix/<short-description>`.
     - Do NOT commit directly to `main`.
     - Example: `git checkout -b feature/user-profile-page`
