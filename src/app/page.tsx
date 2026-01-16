@@ -2,6 +2,7 @@ import { auth } from '@/auth';
 import { HeroSection } from '@/components/landing/HeroSection';
 import { Navbar } from '@/components/layout/Navbar';
 import { DemoSection } from '@/components/landing/DemoSection';
+import { Footer } from '@/components/layout/Footer';
 
 export default async function Home() {
   const session = await auth();
@@ -13,6 +14,7 @@ export default async function Home() {
         <HeroSection isLoggedIn={!!session} />
         <DemoSection />
       </main>
+      <Footer />
     </div>
   );
 }
