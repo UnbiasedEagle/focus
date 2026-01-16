@@ -61,3 +61,7 @@ export async function login(formData: FormData) {
     throw error;
   }
 }
+
+export async function loginWithGoogle() {
+  await signIn('google', { redirectTo: '/' });
+}
