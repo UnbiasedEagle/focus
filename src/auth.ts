@@ -2,6 +2,7 @@ import NextAuth from 'next-auth';
 import { DrizzleAdapter } from '@auth/drizzle-adapter';
 import Credentials from 'next-auth/providers/credentials';
 import Google from 'next-auth/providers/google';
+import GitHub from 'next-auth/providers/github';
 import { db } from '@/server/db';
 import {
   accounts,
@@ -21,6 +22,9 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   }),
   providers: [
     Google({
+      allowDangerousEmailAccountLinking: true,
+    }),
+    GitHub({
       allowDangerousEmailAccountLinking: true,
     }),
     Credentials({
