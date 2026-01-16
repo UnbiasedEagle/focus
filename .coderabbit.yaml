@@ -1,0 +1,15 @@
+# CodeRabbit Configuration
+# Documentation: https://coderabbit.ai/docs/configure-coderabbit
+
+version: '0.1'
+
+reviews:
+  request_changes_workflow: true # Essential for auto-approval. CodeRabbit will Approve if clean.
+  high_level_summary: true
+  auto_review:
+    enabled: true
+    drafts: false
+  profile: 'chill' # 'chill', 'assertive', or 'balanced'
+
+chat:
+  auto_reply: true
