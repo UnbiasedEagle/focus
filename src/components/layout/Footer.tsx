@@ -19,7 +19,7 @@ export function Footer() {
             </div>
 
             <h3 className='text-2xl font-bold tracking-tight text-foreground'>
-              Developed by{' '}
+              Developed & Maintained by{' '}
               <span className='text-indigo-500'>Saurabh Singh</span>
             </h3>
 

@@ -69,8 +69,8 @@ export function MobileSidebar() {
               href='mailto:devsaurabhsingh@gmail.com'
               className='block group p-4 rounded-xl bg-zinc-100/50 dark:bg-zinc-900/50 border border-zinc-200 dark:border-zinc-800 transition-all hover:border-indigo-500/30'
             >
-              <p className='text-[10px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-[0.2em] leading-none mb-1.5'>
-                Developer
+              <p className='text-[8px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-widest leading-none mb-1.5 whitespace-nowrap'>
+                Developed & Maintained
               </p>
               <p className='text-xs font-bold text-foreground group-hover:text-indigo-500 transition-colors'>
                 Saurabh Singh
