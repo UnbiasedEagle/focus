@@ -10,7 +10,7 @@ reviews:
   auto_review:
     enabled: true
     drafts: false
-  profile: 'chill' # 'chill', 'assertive', or 'balanced'
+  profile: 'chill' # 'chill' or 'assertive'
 
 chat:
   auto_reply: true
