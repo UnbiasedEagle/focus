@@ -77,7 +77,8 @@ We utilize a feature-branch workflow to maintain code quality and stability.
 
 1.  **Branching**: New features/fixes are developed on separate branches (e.g., `feature/habits-implementation`, `fix/login-bug`).
 2.  **Commits**: We use semantic commit messages (e.g., `feat: add habit tracking`, `fix: resolve race condition`).
-3.  **PR & Review**: Changes are pushed to GitHub and merged into `main` after verification.
+3.  **Automated Review**: Integrated with **CodeRabbit** for AI-driven code reviews and insights on every Pull Request.
+4.  **PR & Review**: Changes are pushed to GitHub and merged into `main` after verification.
 
 ### Deployment
 
