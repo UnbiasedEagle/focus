@@ -1,5 +1,5 @@
 import { LoginForm } from '@/components/auth/LoginForm';
-import { Layout, Clock } from 'lucide-react';
+import { Layout, Clock, Zap } from 'lucide-react';
 import { AuthLayout } from '@/components/auth/AuthLayout';
 import { AuthVisualSidebar } from '@/components/auth/AuthVisualSidebar';
 import { AuthMobileHeader } from '@/components/auth/AuthMobileHeader';
@@ -10,6 +10,11 @@ export default function LoginPage() {
       icon: Layout,
       title: 'Structured Boards',
       desc: 'Your tasks, visualized and manageable.',
+    },
+    {
+      icon: Zap,
+      title: 'Daily Habits',
+      desc: 'Build consistency with streaks.',
     },
     {
       icon: Clock,

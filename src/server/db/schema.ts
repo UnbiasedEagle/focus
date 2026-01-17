@@ -7,12 +7,18 @@ import {
   primaryKey,
   text,
   timestamp,
+  unique,
 } from 'drizzle-orm/pg-core';
 import { relations } from 'drizzle-orm';
 import { type AdapterAccount } from 'next-auth/adapters';
 
 // --- Enums ---
 export const priorityEnum = pgEnum('priority', ['Low', 'Medium', 'High']);
+export const frequencyEnum = pgEnum('frequency', [
+  'Daily',
+  'Weekly',
+  'Monthly',
+]);
 
 // --- Auth Tables ---
 export const users = pgTable('user', {
@@ -173,6 +179,40 @@ export const events = pgTable('event', {
   updatedAt: timestamp('updatedAt').defaultNow().notNull(),
 });
 
+export const habits = pgTable('habit', {
+  id: text('id')
+    .primaryKey()
+    .$defaultFn(() => crypto.randomUUID()),
+  userId: text('userId')
+    .notNull()
+    .references(() => users.id, { onDelete: 'cascade' }),
+  title: text('title').notNull(),
+  description: text('description'),
+  icon: text('icon'), // Lucide icon name
+  color: text('color'), // hex or tailwind class
+  frequency: frequencyEnum('frequency').default('Daily').notNull(),
+  startDate: timestamp('startDate', { mode: 'date' }).defaultNow().notNull(),
+  createdAt: timestamp('createdAt').defaultNow().notNull(),
+  updatedAt: timestamp('updatedAt').defaultNow().notNull(),
+});
+
+export const habitLogs = pgTable(
+  'habit_log',
+  {
+    id: text('id')
+      .primaryKey()
+      .$defaultFn(() => crypto.randomUUID()),
+    habitId: text('habitId')
+      .notNull()
+      .references(() => habits.id, { onDelete: 'cascade' }),
+    date: timestamp('date', { mode: 'date' }).notNull(),
+    createdAt: timestamp('createdAt').defaultNow().notNull(),
+  },
+  (t) => ({
+    unq: unique().on(t.habitId, t.date),
+  })
+);
+
 // --- Relations ---
 
 export const usersRelations = relations(users, ({ many }) => ({
@@ -216,3 +256,18 @@ export const pomodoroSessionsRelations = relations(
     }),
   })
 );
+
+export const habitsRelations = relations(habits, ({ one, many }) => ({
+  user: one(users, {
+    fields: [habits.userId],
+    references: [users.id],
+  }),
+  logs: many(habitLogs),
+}));
+
+export const habitLogsRelations = relations(habitLogs, ({ one }) => ({
+  habit: one(habits, {
+    fields: [habitLogs.habitId],
+    references: [habits.id],
+  }),
+}));

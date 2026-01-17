@@ -44,7 +44,30 @@ export const EventSchema = z.object({
     .max(100, 'Title is too long'),
   description: z.string().optional(),
   location: z.string().optional(),
-  time: z.string().optional(), // We'll validate date logic separately or refine this
+  start: z.date(),
+  end: z.date(),
   allDay: z.boolean().optional(),
 });
 export type EventInput = z.infer<typeof EventSchema>;
+
+export const HabitSchema = z.object({
+  title: z.string().min(1, 'Title is required').max(100, 'Title is too long'),
+  description: z.string().optional(),
+  frequency: z.enum(['Daily', 'Weekly', 'Monthly']),
+  icon: z.string().optional(),
+  color: z.string().optional(),
+  startDate: z.date().optional(),
+});
+export type HabitInput = z.infer<typeof HabitSchema>;
+
+export const JournalEntrySchema = z.object({
+  content: z.string().max(10000, 'Entry is too long (max 10000 chars)'),
+  date: z.date(),
+});
+
+export const PomodoroSettingsSchema = z.object({
+  workDuration: z.number().min(1).max(60),
+  shortBreakDuration: z.number().min(1).max(30),
+  longBreakDuration: z.number().min(1).max(60),
+  longBreakInterval: z.number().min(1).max(10),
+});

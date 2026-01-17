@@ -7,14 +7,17 @@ import { eq } from 'drizzle-orm';
 import { signIn } from '@/auth';
 import { AuthError } from 'next-auth';
 
-export async function register(formData: FormData) {
-  const email = formData.get('email') as string;
-  const password = formData.get('password') as string;
-  const name = (formData.get('name') as string) || 'User';
+import { SignupSchema, LoginSchema } from '@/lib/schemas';
 
-  if (!email || !password) {
-    throw new Error('Missing email or password');
+export async function register(formData: FormData) {
+  const data = Object.fromEntries(formData.entries());
+
+  const validated = SignupSchema.safeParse(data);
+  if (!validated.success) {
+    throw new Error(validated.error.issues[0].message);
   }
+
+  const { email, password, name } = validated.data;
 
   // Check if user exists
   const existingUser = await db.query.users.findFirst({
@@ -36,12 +39,14 @@ export async function register(formData: FormData) {
 }
 
 export async function login(formData: FormData) {
-  const email = formData.get('email') as string;
-  const password = formData.get('password') as string;
+  const data = Object.fromEntries(formData.entries());
 
-  if (!email || !password) {
-    throw new Error('Missing credentials');
+  const validated = LoginSchema.safeParse(data);
+  if (!validated.success) {
+    throw new Error(validated.error.issues[0].message);
   }
+
+  const { email, password } = validated.data;
 
   try {
     await signIn('credentials', {

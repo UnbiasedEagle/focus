@@ -23,6 +23,7 @@ import { signOut } from 'next-auth/react';
 export const sidebarItems = [
   { icon: LayoutDashboard, label: 'Overview', href: '/dashboard' },
   { icon: CheckSquare, label: 'Kanban Board', href: '/dashboard/kanban' },
+  { icon: Zap, label: 'Habits', href: '/dashboard/habits' },
   { icon: Timer, label: 'Focus Timer', href: '/dashboard/pomodoro' },
   { icon: BookOpen, label: 'Daily Journal', href: '/dashboard/journal' },
   { icon: Calendar, label: 'Schedule', href: '/dashboard/schedule' },

@@ -6,9 +6,16 @@ import { eq, and, desc, isNotNull } from 'drizzle-orm';
 import { revalidatePath } from 'next/cache';
 import { auth } from '@/auth';
 
+import { z } from 'zod';
+
 export async function startPomodoroSession(taskId?: string) {
   const session = await auth();
   if (!session?.user?.id) throw new Error('Unauthorized');
+
+  if (taskId) {
+    const validated = z.string().uuid().safeParse(taskId);
+    if (!validated.success) throw new Error('Invalid Task ID format');
+  }
 
   const [newSession] = await db
     .insert(pomodoroSessions)

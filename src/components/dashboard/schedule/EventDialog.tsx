@@ -4,6 +4,7 @@ import { useEffect } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { EventSchema, type EventInput } from '@/lib/schemas';
+import { z } from 'zod'; // Added for local schema
 import { toast } from 'sonner';
 import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
 import {
@@ -56,14 +57,25 @@ export function EventDialog({
   event,
   onClose,
 }: EventDialogProps) {
+  // Local form schema that handles UI state (time string) separate from DB schema (Date objects)
+  const FormSchema = z.object({
+    title: z.string().min(1, 'Title is required'),
+    description: z.string().optional(),
+    location: z.string().optional(),
+    time: z.string().optional(),
+    allDay: z.boolean().optional(),
+  });
+
+  type FormInput = z.infer<typeof FormSchema>;
+
   const {
     register,
     handleSubmit,
     control,
     reset,
     formState: { errors, isSubmitting },
-  } = useForm<EventInput>({
-    resolver: zodResolver(EventSchema),
+  } = useForm<FormInput>({
+    resolver: zodResolver(FormSchema),
     defaultValues: {
       title: '',
       description: '',
@@ -85,7 +97,7 @@ export function EventDialog({
             event.start && !event.allDay
               ? format(new Date(event.start), 'HH:mm')
               : 'all-day',
-          allDay: event.allDay,
+          allDay: event.allDay || false,
         });
       } else {
         reset({
@@ -99,7 +111,7 @@ export function EventDialog({
     }
   }, [open, event, reset]);
 
-  const onSubmit = async (data: EventInput) => {
+  const onSubmit = async (data: FormInput) => {
     // Construct Date objects
     const startDateTime = new Date(selectedDate || new Date());
     const time = data.time;
@@ -112,7 +124,7 @@ export function EventDialog({
     const endDateTime = new Date(startDateTime);
     endDateTime.setHours(startDateTime.getHours() + 1);
 
-    const isAllDay = !time || time === 'all-day';
+    const isAllDay = !time || time === 'all-day' || data.allDay;
 
     const promise = event
       ? updateEvent(event.id, {
@@ -125,10 +137,10 @@ export function EventDialog({
         })
       : createEvent({
           title: data.title,
-          description: data.description,
+          description: data.description || '',
           start: startDateTime,
           end: endDateTime,
-          location: data.location,
+          location: data.location || '',
           allDay: isAllDay,
         });
 

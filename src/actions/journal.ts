@@ -25,12 +25,18 @@ export async function getJournalEntryByDate(date: Date) {
   });
 }
 
+import { JournalEntrySchema } from '@/lib/schemas';
+import { z } from 'zod';
+
 export async function upsertJournalEntry(
   content: string,
   date: Date = new Date()
 ) {
   const session = await auth();
   if (!session?.user?.id) throw new Error('Unauthorized');
+
+  const validated = JournalEntrySchema.safeParse({ content, date });
+  if (!validated.success) throw new Error(validated.error.issues[0].message);
 
   const existing = await getJournalEntryByDate(date);
 

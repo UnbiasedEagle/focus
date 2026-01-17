@@ -13,7 +13,7 @@ async function capture() {
     if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
   });
 
-  const baseUrl = 'https://getfocus.vercel.app';
+  const baseUrl = 'http://localhost:3000';
   const browser = await chromium.launch({ headless: true });
 
   try {
@@ -51,6 +51,7 @@ async function capture() {
     const assets = [
       { name: 'dashboard-main.png', url: '/dashboard' },
       { name: 'kanban-board.png', url: '/dashboard/kanban' },
+      { name: 'habit-tracker.png', url: '/dashboard/habits' },
       { name: 'pomodoro-timer.png', url: '/dashboard/pomodoro' },
       { name: 'journal-entries.png', url: '/dashboard/journal' },
       { name: 'calendar-schedule.png', url: '/dashboard/schedule' },

@@ -7,7 +7,6 @@ import {
   Clock,
   CheckCircle2,
   TrendingUp,
-  Flame,
   ArrowRight,
   Plus,
 } from 'lucide-react';
@@ -15,6 +14,8 @@ import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { GlobalNewTaskDialog } from '@/components/dashboard/GlobalNewTaskDialog';
+import { getHabits } from '@/actions/habits';
+import { Activity } from 'lucide-react';
 
 export default async function DashboardPage() {
   const session = await auth();
@@ -22,13 +23,14 @@ export default async function DashboardPage() {
 
   const stats = await getProductivityStats();
   const board = await getInitialBoard();
+  const habits = await getHabits();
 
   const totalTasks =
     board?.columns?.reduce((acc, col) => acc + (col.tasks?.length || 0), 0) ||
     0;
 
   return (
-    <div className='space-y-8 max-w-6xl mx-auto'>
+    <div className='space-y-8'>
       {/* Header Section */}
       <div className='flex flex-col sm:flex-row sm:items-end justify-between gap-4 pb-2 border-b border-zinc-100 dark:border-zinc-800/50'>
         <div>
@@ -72,17 +74,18 @@ export default async function DashboardPage() {
             icon: Clock,
             color: 'text-zinc-900 dark:text-zinc-100',
           },
-          {
-            title: 'Current Streak',
-            value: stats?.streak || 0,
-            icon: Flame,
-            color: 'text-orange-500',
-          },
+
           {
             title: 'Sessions',
             value: stats?.totalSessions || 0,
             icon: TrendingUp,
             color: 'text-zinc-400',
+          },
+          {
+            title: 'Active Habits',
+            value: habits.length,
+            icon: Activity,
+            color: 'text-indigo-500',
           },
         ].map((stat, i) => (
           <Card

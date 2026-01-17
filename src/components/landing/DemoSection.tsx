@@ -9,6 +9,7 @@ import {
   BookText,
   Calendar,
   ExternalLink,
+  Zap,
 } from 'lucide-react';
 
 const demos = [
@@ -29,6 +30,15 @@ const demos = [
     icon: Kanban,
     color: 'purple',
     delay: 0.2,
+  },
+  {
+    title: 'Habit Tracker',
+    description:
+      'Build consistency with streaks and heatmaps. Visualize your progress and make success a daily routine.',
+    image: '/landing/images/dashboard-main.png',
+    icon: Zap,
+    color: 'indigo',
+    delay: 0.25,
   },
   {
     title: 'Deep Work Timer',
@@ -94,6 +104,13 @@ const colorVariants = {
     border: 'group-hover:border-rose-500/20',
     shadow: 'group-hover:shadow-rose-500/10',
     accent: 'bg-rose-500',
+  },
+  indigo: {
+    bg: 'bg-indigo-500/10',
+    text: 'text-indigo-500',
+    border: 'group-hover:border-indigo-500/20',
+    shadow: 'group-hover:shadow-indigo-500/10',
+    accent: 'bg-indigo-500',
   },
 };
 
