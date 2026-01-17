@@ -1,5 +1,5 @@
 import { SignupForm } from '@/components/auth/SignupForm';
-import { Layout, Clock, BookOpen } from 'lucide-react';
+import { Layout, Clock, BookOpen, Zap } from 'lucide-react';
 import { AuthLayout } from '@/components/auth/AuthLayout';
 import { AuthVisualSidebar } from '@/components/auth/AuthVisualSidebar';
 import { AuthMobileHeader } from '@/components/auth/AuthMobileHeader';
@@ -10,6 +10,11 @@ export default function SignupPage() {
       icon: Layout,
       title: 'Dynamic Boards',
       desc: 'Native-fast Kanban execution.',
+    },
+    {
+      icon: Zap,
+      title: 'Habit Mastery',
+      desc: 'Visualize progress with heatmaps.',
     },
     {
       icon: Clock,

@@ -3,7 +3,7 @@ import { Card } from '@/components/ui/card';
 
 export default function HabitsPage() {
   return (
-    <div className='space-y-8 max-w-6xl mx-auto'>
+    <div className='space-y-8'>
       <div className='flex flex-col gap-2'>
         <h1 className='text-3xl font-bold tracking-tight text-zinc-900 dark:text-zinc-50'>
           Habits

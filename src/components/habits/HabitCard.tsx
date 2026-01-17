@@ -187,8 +187,6 @@ export function HabitCard({ habit }: HabitCardProps) {
         </div>
 
         {/* Controls - Always visible */}
-
-        {/* Controls - Always visible */}
         <div className='flex items-center'>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>

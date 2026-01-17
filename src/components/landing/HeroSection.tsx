@@ -1,7 +1,7 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { ArrowRight, Layout, Clock, BookOpen } from 'lucide-react';
+import { ArrowRight, Layout, Clock, BookOpen, Zap } from 'lucide-react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { HeroVisual } from '@/components/landing/HeroVisual';
@@ -40,8 +40,8 @@ export function HeroSection({ isLoggedIn }: { isLoggedIn: boolean }) {
             transition={{ duration: 0.5, delay: 0.2 }}
             className='max-w-xl text-base sm:text-lg text-muted-foreground mb-6 lg:mb-8 text-balance'
           >
-            The all-in-one productivity workspace. Kanban boards, Pomodoro
-            timers, and Journaling — combined in one calm interface.
+            The all-in-one productivity workspace. Kanban boards, Habits,
+            Pomodoro timers, and Journaling — combined in one calm interface.
           </motion.p>
 
           <motion.div
@@ -71,6 +71,9 @@ export function HeroSection({ isLoggedIn }: { isLoggedIn: boolean }) {
           >
             <div className='flex items-center gap-2'>
               <Layout className='h-4 w-4 text-indigo-500' /> Boards
+            </div>
+            <div className='flex items-center gap-2'>
+              <Zap className='h-4 w-4 text-yellow-500' /> Habits
             </div>
             <div className='flex items-center gap-2'>
               <Clock className='h-4 w-4 text-orange-500' /> Pomodoro

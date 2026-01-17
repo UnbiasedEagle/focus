@@ -30,7 +30,7 @@ export default async function DashboardPage() {
     0;
 
   return (
-    <div className='space-y-8 max-w-6xl mx-auto'>
+    <div className='space-y-8'>
       {/* Header Section */}
       <div className='flex flex-col sm:flex-row sm:items-end justify-between gap-4 pb-2 border-b border-zinc-100 dark:border-zinc-800/50'>
         <div>
