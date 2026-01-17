@@ -35,7 +35,7 @@ const demos = [
     title: 'Habit Tracker',
     description:
       'Build consistency with streaks and heatmaps. Visualize your progress and make success a daily routine.',
-    image: '/landing/images/dashboard-main.png',
+    image: '/landing/images/habit-tracker.png',
     icon: Zap,
     color: 'indigo',
     delay: 0.25,
