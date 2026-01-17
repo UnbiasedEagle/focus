@@ -36,8 +36,7 @@ export async function upsertJournalEntry(
   if (!session?.user?.id) throw new Error('Unauthorized');
 
   const validated = JournalEntrySchema.safeParse({ content, date });
-  if (!validated.success)
-    throw new Error((validated.error as any).errors[0].message);
+  if (!validated.success) throw new Error(validated.error.issues[0].message);
 
   const existing = await getJournalEntryByDate(date);
 

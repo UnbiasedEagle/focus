@@ -79,8 +79,7 @@ export async function createBoard(name: string) {
   const user = await requireUser();
 
   const validated = BoardSchema.safeParse({ name });
-  if (!validated.success)
-    throw new Error((validated.error as any).errors[0].message);
+  if (!validated.success) throw new Error(validated.error.issues[0].message);
 
   const [newBoard] = await db
     .insert(boards)
@@ -122,8 +121,7 @@ export async function updateBoard(boardId: string, name: string) {
   const user = await requireUser();
 
   const validated = BoardSchema.safeParse({ name });
-  if (!validated.success)
-    throw new Error((validated.error as any).errors[0].message);
+  if (!validated.success) throw new Error(validated.error.issues[0].message);
 
   await db
     .update(boards)
@@ -137,8 +135,7 @@ export async function createColumn(boardId: string, title: string) {
   await requireUser();
 
   const validated = ColumnSchema.safeParse({ title });
-  if (!validated.success)
-    throw new Error((validated.error as any).errors[0].message);
+  if (!validated.success) throw new Error(validated.error.issues[0].message);
 
   // Get current max order
   const existingColumns = await db.query.columns.findMany({
@@ -169,8 +166,7 @@ export async function updateColumn(columnId: string, title: string) {
   await requireUser();
 
   const validated = ColumnSchema.safeParse({ title });
-  if (!validated.success)
-    throw new Error((validated.error as any).errors[0].message);
+  if (!validated.success) throw new Error(validated.error.issues[0].message);
 
   await db
     .update(columns)
@@ -209,8 +205,7 @@ export async function createTask(
   await requireUser();
 
   const validated = TaskSchema.safeParse({ title, description, priority });
-  if (!validated.success)
-    throw new Error((validated.error as any).errors[0].message);
+  if (!validated.success) throw new Error(validated.error.issues[0].message);
 
   // Get current max order in this column
   const existingTasks = await db.query.tasks.findMany({
@@ -261,8 +256,7 @@ export async function updateTask(
   await requireUser();
 
   const validated = TaskSchema.safeParse({ title, description, priority });
-  if (!validated.success)
-    throw new Error((validated.error as any).errors[0].message);
+  if (!validated.success) throw new Error(validated.error.issues[0].message);
 
   await db
     .update(tasks)

@@ -31,8 +31,7 @@ export async function createEvent(data: z.infer<typeof EventSchema>) {
   const user = await requireUser();
 
   const validated = EventSchema.safeParse(data);
-  if (!validated.success)
-    throw new Error((validated.error as any).errors[0].message);
+  if (!validated.success) throw new Error(validated.error.issues[0].message);
 
   const [newEvent] = await db
     .insert(events)
@@ -55,8 +54,7 @@ export async function updateEvent(
   const user = await requireUser();
 
   const validated = EventSchema.partial().safeParse(data);
-  if (!validated.success)
-    throw new Error((validated.error as any).errors[0].message);
+  if (!validated.success) throw new Error(validated.error.issues[0].message);
 
   const [updatedEvent] = await db
     .update(events)

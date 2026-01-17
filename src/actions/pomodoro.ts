@@ -14,10 +14,7 @@ export async function startPomodoroSession(taskId?: string) {
 
   if (taskId) {
     const validated = z.string().uuid().safeParse(taskId);
-    // If your IDs are CUIDs or something else, adjust. Assuming UUID for now based on Drizzle defaults or just string.
-    // actually let's just ensure it's a string.
-    if (!z.string().safeParse(taskId).success)
-      throw new Error('Invalid Task ID');
+    if (!validated.success) throw new Error('Invalid Task ID format');
   }
 
   const [newSession] = await db
