@@ -6,9 +6,19 @@ import { eq, and, desc, isNotNull } from 'drizzle-orm';
 import { revalidatePath } from 'next/cache';
 import { auth } from '@/auth';
 
+import { z } from 'zod';
+
 export async function startPomodoroSession(taskId?: string) {
   const session = await auth();
   if (!session?.user?.id) throw new Error('Unauthorized');
+
+  if (taskId) {
+    const validated = z.string().uuid().safeParse(taskId);
+    // If your IDs are CUIDs or something else, adjust. Assuming UUID for now based on Drizzle defaults or just string.
+    // actually let's just ensure it's a string.
+    if (!z.string().safeParse(taskId).success)
+      throw new Error('Invalid Task ID');
+  }
 
   const [newSession] = await db
     .insert(pomodoroSessions)

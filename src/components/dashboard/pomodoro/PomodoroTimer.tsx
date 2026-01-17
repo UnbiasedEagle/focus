@@ -25,6 +25,8 @@ type Task = {
   columnTitle: string;
 };
 
+import { toast } from 'sonner';
+
 export function PomodoroTimer({ tasks }: { tasks: Task[] }) {
   const {
     mode,
@@ -52,6 +54,7 @@ export function PomodoroTimer({ tasks }: { tasks: Task[] }) {
           if (session) setCurrentSessionId(session.id);
         } catch (error) {
           console.error('Failed to start session', error);
+          toast.error('Failed to start timer session');
         }
       }
       setIsActive(true);
@@ -70,6 +73,7 @@ export function PomodoroTimer({ tasks }: { tasks: Task[] }) {
         await abandonPomodoroSession(currentSessionId);
       } catch (error) {
         console.error('Failed to abandon session', error);
+        toast.error('Failed to save session progress');
       }
       setCurrentSessionId(null);
     }

@@ -52,10 +52,15 @@ export async function updateHabit(
   const session = await auth();
   if (!session?.user?.id) throw new Error('Unauthorized');
 
+  const validated = HabitSchema.partial().safeParse(data);
+  if (!validated.success) {
+    throw new Error('Invalid data');
+  }
+
   await db
     .update(habits)
     .set({
-      ...data,
+      ...validated.data,
       updatedAt: new Date(),
     })
     .where(and(eq(habits.id, id), eq(habits.userId, session.user.id)));

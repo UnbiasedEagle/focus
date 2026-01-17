@@ -8,6 +8,7 @@ import { auth } from '@/auth';
 import { requireUser } from '@/lib/auth-utils';
 
 // --- Board Actions ---
+// --- Board Actions ---
 export async function getBoard(boardId: string) {
   const user = await requireUser();
 
@@ -38,7 +39,7 @@ export async function getInitialBoard() {
     where: eq(boards.userId, session.user.id),
   });
 
-  // If no board, create one called "My Board"
+  // If no board, create one
   if (!board) {
     const [newBoard] = await db
       .insert(boards)
@@ -72,14 +73,20 @@ export async function getBoards() {
   });
 }
 
+import { BoardSchema, ColumnSchema, TaskSchema } from '@/lib/schemas';
+
 export async function createBoard(name: string) {
   const user = await requireUser();
+
+  const validated = BoardSchema.safeParse({ name });
+  if (!validated.success)
+    throw new Error((validated.error as any).errors[0].message);
 
   const [newBoard] = await db
     .insert(boards)
     .values({
       userId: user.id,
-      name,
+      name: validated.data.name,
     })
     .returning();
 
@@ -114,9 +121,13 @@ export async function deleteBoard(boardId: string) {
 export async function updateBoard(boardId: string, name: string) {
   const user = await requireUser();
 
+  const validated = BoardSchema.safeParse({ name });
+  if (!validated.success)
+    throw new Error((validated.error as any).errors[0].message);
+
   await db
     .update(boards)
-    .set({ name })
+    .set({ name: validated.data.name })
     .where(and(eq(boards.id, boardId), eq(boards.userId, user.id)));
   revalidatePath('/dashboard/kanban');
 }
@@ -124,6 +135,10 @@ export async function updateBoard(boardId: string, name: string) {
 // --- Column Actions ---
 export async function createColumn(boardId: string, title: string) {
   await requireUser();
+
+  const validated = ColumnSchema.safeParse({ title });
+  if (!validated.success)
+    throw new Error((validated.error as any).errors[0].message);
 
   // Get current max order
   const existingColumns = await db.query.columns.findMany({
@@ -136,7 +151,7 @@ export async function createColumn(boardId: string, title: string) {
 
   await db.insert(columns).values({
     boardId,
-    title,
+    title: validated.data.title,
     order: maxOrder + 1,
   });
 
@@ -153,7 +168,14 @@ export async function deleteColumn(columnId: string) {
 export async function updateColumn(columnId: string, title: string) {
   await requireUser();
 
-  await db.update(columns).set({ title }).where(eq(columns.id, columnId));
+  const validated = ColumnSchema.safeParse({ title });
+  if (!validated.success)
+    throw new Error((validated.error as any).errors[0].message);
+
+  await db
+    .update(columns)
+    .set({ title: validated.data.title })
+    .where(eq(columns.id, columnId));
 
   revalidatePath(`/dashboard/kanban`);
 }
@@ -186,6 +208,10 @@ export async function createTask(
 ) {
   await requireUser();
 
+  const validated = TaskSchema.safeParse({ title, description, priority });
+  if (!validated.success)
+    throw new Error((validated.error as any).errors[0].message);
+
   // Get current max order in this column
   const existingTasks = await db.query.tasks.findMany({
     where: eq(tasks.columnId, columnId),
@@ -197,9 +223,9 @@ export async function createTask(
 
   await db.insert(tasks).values({
     columnId,
-    title,
-    description,
-    priority,
+    title: validated.data.title,
+    description: validated.data.description,
+    priority: validated.data.priority,
     order: maxOrder + 1,
   });
 
@@ -234,12 +260,16 @@ export async function updateTask(
 ) {
   await requireUser();
 
+  const validated = TaskSchema.safeParse({ title, description, priority });
+  if (!validated.success)
+    throw new Error((validated.error as any).errors[0].message);
+
   await db
     .update(tasks)
     .set({
-      title,
-      description,
-      priority,
+      title: validated.data.title,
+      description: validated.data.description,
+      priority: validated.data.priority,
       updatedAt: new Date(),
     })
     .where(eq(tasks.id, taskId));

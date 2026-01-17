@@ -24,16 +24,23 @@ export async function getEvents(start: Date, end: Date) {
   });
 }
 
-export async function createEvent(
-  data: Omit<NewEvent, 'id' | 'userId' | 'createdAt' | 'updatedAt'>
-) {
+import { EventSchema } from '@/lib/schemas';
+import { z } from 'zod';
+
+export async function createEvent(data: z.infer<typeof EventSchema>) {
   const user = await requireUser();
+
+  const validated = EventSchema.safeParse(data);
+  if (!validated.success)
+    throw new Error((validated.error as any).errors[0].message);
 
   const [newEvent] = await db
     .insert(events)
     .values({
-      ...data,
+      ...validated.data,
       userId: user.id,
+      start: validated.data.start, // Explicitly map to ensure types align if schema was loose
+      end: validated.data.end,
     })
     .returning();
 
@@ -43,14 +50,18 @@ export async function createEvent(
 
 export async function updateEvent(
   id: string,
-  data: Partial<Omit<NewEvent, 'id' | 'userId' | 'createdAt' | 'updatedAt'>>
+  data: Partial<z.infer<typeof EventSchema>>
 ) {
   const user = await requireUser();
+
+  const validated = EventSchema.partial().safeParse(data);
+  if (!validated.success)
+    throw new Error((validated.error as any).errors[0].message);
 
   const [updatedEvent] = await db
     .update(events)
     .set({
-      ...data,
+      ...validated.data,
       updatedAt: new Date(),
     })
     .where(and(eq(events.id, id), eq(events.userId, user.id)))
