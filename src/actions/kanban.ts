@@ -8,7 +8,6 @@ import { auth } from '@/auth';
 import { requireUser } from '@/lib/auth-utils';
 
 // --- Board Actions ---
-// --- Board Actions ---
 export async function getBoard(boardId: string) {
   const user = await requireUser();
 
