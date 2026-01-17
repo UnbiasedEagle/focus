@@ -57,11 +57,11 @@ Capture your thoughts and reflections.
 
 Built with a modern, type-safe stack designed for performance and developer experience.
 
-- **Framework**: [Next.js 15 (App Router)](https://nextjs.org/) - React Server Components & Server Actions.
+- **Framework**: [Next.js 16.1.2 (App Router)](https://nextjs.org/) - React Server Components & Server Actions.
 - **Language**: [TypeScript](https://www.typescriptlang.org/) - End-to-end type safety.
 - **Database**: [PostgreSQL (Neon)](https://neon.tech/) - Serverless Postgres.
 - **ORM**: [Drizzle ORM](https://orm.drizzle.team/) - Lightweight and type-safe data access.
-- **Auth**: [NextAuth.js (v5)](https://authjs.dev/) - Secure authentication with Google, GitHub, and Credentials.
+- **Auth**: [NextAuth.js (v5 Beta)](https://authjs.dev/) - Secure authentication with Google, GitHub, and Credentials.
 - **Styling**: [Tailwind CSS](https://tailwindcss.com/) - Utility-first CSS for rapid UI development.
 - **Validation**: [Zod](https://zod.dev/) - Schema validation for reliable data handling.
 - **UI Components**: [Radix UI](https://www.radix-ui.com/) & [Lucide Icons](https://lucide.dev/).
