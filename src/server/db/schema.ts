@@ -7,6 +7,7 @@ import {
   primaryKey,
   text,
   timestamp,
+  unique,
 } from 'drizzle-orm/pg-core';
 import { relations } from 'drizzle-orm';
 import { type AdapterAccount } from 'next-auth/adapters';
@@ -195,16 +196,22 @@ export const habits = pgTable('habit', {
   updatedAt: timestamp('updatedAt').defaultNow().notNull(),
 });
 
-export const habitLogs = pgTable('habit_log', {
-  id: text('id')
-    .primaryKey()
-    .$defaultFn(() => crypto.randomUUID()),
-  habitId: text('habitId')
-    .notNull()
-    .references(() => habits.id, { onDelete: 'cascade' }),
-  date: timestamp('date', { mode: 'date' }).notNull(),
-  createdAt: timestamp('createdAt').defaultNow().notNull(),
-});
+export const habitLogs = pgTable(
+  'habit_log',
+  {
+    id: text('id')
+      .primaryKey()
+      .$defaultFn(() => crypto.randomUUID()),
+    habitId: text('habitId')
+      .notNull()
+      .references(() => habits.id, { onDelete: 'cascade' }),
+    date: timestamp('date', { mode: 'date' }).notNull(),
+    createdAt: timestamp('createdAt').defaultNow().notNull(),
+  },
+  (t) => ({
+    unq: unique().on(t.habitId, t.date),
+  })
+);
 
 // --- Relations ---
 

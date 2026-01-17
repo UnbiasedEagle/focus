@@ -11,14 +11,35 @@ import { eq } from 'drizzle-orm';
 import { hash } from 'bcryptjs';
 import { subDays, addDays, startOfDay, addHours } from 'date-fns';
 
-const sql = neon(process.env.DATABASE_URL!);
+if (!process.env.DATABASE_URL) {
+  console.error('❌ DATABASE_URL is not set in environment variables');
+  process.exit(1);
+}
+
+const sql = neon(process.env.DATABASE_URL);
 const db = drizzle(sql, { schema });
 
 async function seed() {
-  console.log('🌱 Starting seed process...');
+  // Guard against accidental production runs
+  if (
+    process.env.NODE_ENV === 'production' &&
+    process.env.FORCE_SEED !== 'true'
+  ) {
+    console.error('❌ Cannot run seed in production without FORCE_SEED=true');
+    process.exit(1);
+  }
 
-  const email = 'saurabh@gmail.com';
-  const password = 'test@123';
+  const email = process.env.SEED_USER_EMAIL || 'saurabh@gmail.com';
+  const password = process.env.SEED_USER_PASSWORD || 'test@123';
+
+  // Warn if using default credentials in non-dev
+  if (
+    !process.env.SEED_USER_PASSWORD &&
+    process.env.NODE_ENV !== 'development'
+  ) {
+    console.warn('⚠️  Using default password in non-development environment!');
+  }
+
   const hashedPassword = await hash(password, 12);
 
   // 1. Cleanup existing user
@@ -28,6 +49,13 @@ async function seed() {
   });
 
   if (existingUser) {
+    if (
+      process.env.NODE_ENV === 'production' &&
+      process.env.FORCE_SEED !== 'true'
+    ) {
+      console.error('❌ Aborting: Attempted to delete user in production.');
+      process.exit(1);
+    }
     await db.delete(schema.users).where(eq(schema.users.id, existingUser.id));
     console.log('Deleted existing user.');
   }
@@ -277,8 +305,8 @@ async function seed() {
       description: 'Weekly sync with design and dev team.',
     },
     {
-      userId,
       title: 'Deep Work Block',
+      userId,
       start: addHours(today, 14),
       end: addHours(today, 16),
       description: 'No meetings, just code.',
@@ -294,8 +322,13 @@ async function seed() {
   ]);
 
   console.log('✅ Seed completed successfully!');
-  console.log('📧 Email: saurabh@gmail.com');
-  console.log('🔑 Password: test@123');
+  console.log(`📧 Email: ${email}`);
+  // Do not log password in production logs
+  if (process.env.NODE_ENV !== 'production') {
+    console.log(`🔑 Password: ${password}`);
+  } else {
+    console.log('🔑 Password: [REDACTED]');
+  }
   process.exit(0);
 }
 

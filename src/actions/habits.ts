@@ -92,20 +92,37 @@ export async function logHabit(habitId: string, date: Date = new Date()) {
 
   const logDate = startOfDay(date);
 
-  // Check if already logged for this date
-  const existingLog = await db.query.habitLogs.findFirst({
-    where: and(eq(habitLogs.habitId, habitId), eq(habitLogs.date, logDate)),
-  });
-
-  if (existingLog) {
-    // Toggle off: delete the log
-    await db.delete(habitLogs).where(eq(habitLogs.id, existingLog.id));
-  } else {
-    // Toggle on: create the log
-    await db.insert(habitLogs).values({
-      habitId,
-      date: logDate,
+  // Atomic toggle using transaction
+  try {
+    await db.transaction(async (tx) => {
+      // Try to insert (Toggle ON)
+      try {
+        await tx.insert(habitLogs).values({
+          habitId,
+          date: logDate,
+        });
+      } catch (err: any) {
+        // If unique constraint violation, it means it already exists -> Delete it (Toggle OFF)
+        // PostgreSQL error code 23505 is unique_violation
+        if (
+          err.code === '23505' ||
+          err.message?.includes('violates unique constraint') ||
+          err.message?.includes('duplicate key value')
+        ) {
+          await tx
+            .delete(habitLogs)
+            .where(
+              and(eq(habitLogs.habitId, habitId), eq(habitLogs.date, logDate))
+            );
+        } else {
+          // Re-throw other errors
+          throw err;
+        }
+      }
     });
+  } catch (error) {
+    console.error('Failed to toggle habit log:', error);
+    throw new Error('Failed to update habit status');
   }
 
   revalidatePath('/dashboard');

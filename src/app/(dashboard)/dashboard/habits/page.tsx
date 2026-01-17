@@ -1,5 +1,4 @@
 import { HabitList } from '@/components/habits/HabitList';
-import { Card } from '@/components/ui/card';
 
 export default function HabitsPage() {
   return (

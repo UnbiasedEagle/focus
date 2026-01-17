@@ -13,7 +13,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { deleteHabit } from '@/actions/habits';
-import * as Icons from 'lucide-react';
+import { ALL_ICONS } from '@/lib/icons';
 import {
   Dialog,
   DialogContent,
@@ -34,14 +34,9 @@ export function HabitCard({ habit }: HabitCardProps) {
   const [loading, setLoading] = useState(false);
   const [showAnalytics, setShowAnalytics] = useState(false);
 
-  const IconComp =
-    (Icons as any)[habit.icon ? habit.icon.toLowerCase() : 'zap'] ||
-    (Icons as any)[
-      habit.icon
-        ? habit.icon.charAt(0).toUpperCase() + habit.icon.slice(1)
-        : 'Zap'
-    ] ||
-    Icons.Zap;
+  // Use the shared ALL_ICONS map for consistent lookup
+  const iconKey = habit.icon ? habit.icon.toLowerCase() : 'zap';
+  const IconComp = ALL_ICONS[iconKey] || ALL_ICONS['zap']; // Fallback to safe icon if not found
 
   const colorMatch = habit.color?.match(/bg-([a-z]+)-/);
 
@@ -95,6 +90,9 @@ export function HabitCard({ habit }: HabitCardProps) {
       >
         {/* Simple Checkbox Action */}
         <button
+          type='button'
+          aria-label={`Toggle completion for ${habit.title}`}
+          aria-pressed={habit.completed}
           onClick={handleToggle}
           disabled={loading}
           className={cn(
@@ -194,13 +192,17 @@ export function HabitCard({ habit }: HabitCardProps) {
                 variant='ghost'
                 size='icon'
                 className='h-7 w-7 text-zinc-300 hover:text-zinc-600 dark:hover:text-zinc-300'
+                aria-label='Open actions menu'
               >
                 <MoreHorizontal className='h-4 w-4' />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align='end'>
               <DropdownMenuItem onClick={() => setShowAnalytics(true)}>
-                <Icons.BarChart2 className='mr-2 h-4 w-4' />
+                {(() => {
+                  const BarChartIcon = ALL_ICONS['barchart'];
+                  return <BarChartIcon className='mr-2 h-4 w-4' />;
+                })()}
                 Analytics
               </DropdownMenuItem>
               <DropdownMenuItem
