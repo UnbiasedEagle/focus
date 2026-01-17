@@ -48,3 +48,13 @@ export const EventSchema = z.object({
   allDay: z.boolean().optional(),
 });
 export type EventInput = z.infer<typeof EventSchema>;
+
+export const HabitSchema = z.object({
+  title: z.string().min(1, 'Title is required').max(100, 'Title is too long'),
+  description: z.string().optional(),
+  frequency: z.enum(['Daily', 'Weekly', 'Monthly']),
+  icon: z.string().optional(),
+  color: z.string().optional(),
+  startDate: z.date().optional(),
+});
+export type HabitInput = z.infer<typeof HabitSchema>;
