@@ -334,7 +334,12 @@ export function CreateHabitDialog({
     <Dialog open={show} onOpenChange={setShow}>
       <DialogTrigger asChild>
         {children || (
-          <Button variant='indigo' size='sm' className='gap-2'>
+          <Button
+            variant='indigo'
+            size='sm'
+            className='gap-2'
+            suppressHydrationWarning
+          >
             <Plus className='h-4 w-4' />
             New Habit
           </Button>

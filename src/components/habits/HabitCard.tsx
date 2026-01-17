@@ -51,15 +51,15 @@ export function HabitCard({ habit }: HabitCardProps) {
       setLoading(true);
       if (!habit.completed) {
         confetti({
-          particleCount: 40,
-          spread: 50,
+          particleCount: 30,
+          spread: 40,
           origin: { y: 0.7 },
           colors: [
             colorMatch ? `var(--${colorMatch[1]}-500)` : '#6366f1',
             '#ffffff',
           ],
           disableForReducedMotion: true,
-          scalar: 0.8,
+          scalar: 0.6,
         });
       }
       await logHabit(habit.id);
@@ -84,108 +84,118 @@ export function HabitCard({ habit }: HabitCardProps) {
     <>
       <motion.div
         layout
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
+        initial={{ opacity: 0, scale: 0.98 }}
+        animate={{ opacity: 1, scale: 1 }}
         exit={{ opacity: 0, scale: 0.95 }}
-        whileHover={{
-          scale: 1.005,
-          backgroundColor: 'rgba(var(--foreground-rgb), 0.02)',
-        }}
+        whileHover={{ scale: 1.002 }}
         className={cn(
-          'group relative flex items-center justify-between p-3 rounded-lg border border-transparent hover:border-zinc-200 dark:hover:border-zinc-800 transition-all duration-200',
-          habit.completed
-            ? 'opacity-60 bg-zinc-50/50 dark:bg-zinc-900/20'
-            : 'bg-white dark:bg-zinc-950/20'
+          'group relative flex items-center p-3 rounded-xl border transition-all duration-200',
+          'bg-white border-zinc-200 shadow-sm hover:border-zinc-300 dark:bg-zinc-950 dark:border-zinc-800 dark:hover:border-zinc-700'
         )}
       >
-        {/* Left: Icon & Info */}
-        <div className='flex items-center gap-4 min-w-0'>
-          {/* Checkbox-style Action */}
-          <button
-            onClick={handleToggle}
-            disabled={loading}
+        {/* Simple Checkbox Action */}
+        <button
+          onClick={handleToggle}
+          disabled={loading}
+          className={cn(
+            'shrink-0 h-5 w-5 rounded-md border flex items-center justify-center transition-all duration-200 ml-1 focus:outline-none focus:ring-2 focus:ring-offset-1 ring-offset-white dark:ring-offset-zinc-950',
+            habit.completed
+              ? cn(
+                  habit.color || 'bg-indigo-500',
+                  'border-transparent text-white'
+                )
+              : cn(
+                  'bg-white border-zinc-300 dark:bg-zinc-900 dark:border-zinc-600',
+                  'hover:border-zinc-400 dark:hover:border-zinc-500',
+                  habit.color
+                    ?.replace('bg-', 'hover:border-')
+                    .replace('500', '400') || 'hover:border-indigo-400'
+                ),
+            loading && 'opacity-50 cursor-wait'
+          )}
+        >
+          {habit.completed && <Check className='h-3.5 w-3.5 stroke-3' />}
+        </button>
+
+        {/* Content */}
+        <div className='flex flex-1 items-center gap-3.5 overflow-hidden px-4'>
+          {/* Icon - Minimal */}
+          <div
             className={cn(
-              'flex-shrink-0 h-6 w-6 rounded-full border-2 flex items-center justify-center transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 ring-offset-white dark:ring-offset-zinc-950',
+              'shrink-0 transition-colors duration-300',
               habit.completed
-                ? 'bg-green-500 border-green-500 text-white'
-                : cn(
-                    'border-zinc-300 dark:border-zinc-600 hover:border-indigo-400 dark:hover:border-indigo-500',
-                    loading && 'opacity-50 cursor-wait'
-                  )
+                ? (habit.color?.replace('bg-', 'text-') || 'text-indigo-500') +
+                    ' opacity-50 grayscale'
+                : habit.color?.replace('bg-', 'text-') || 'text-zinc-500'
             )}
           >
-            {habit.completed && <Check className='h-3.5 w-3.5 stroke-[3]' />}
-          </button>
+            <IconComp className='h-5 w-5 stroke-[1.5]' />
+          </div>
 
-          {/* Icon & Details */}
-          <div className='flex flex-col min-w-0'>
+          {/* Text details */}
+          <div className='flex flex-col min-w-0 flex-1'>
             <div className='flex items-center gap-2'>
               <h3
                 className={cn(
-                  'font-medium text-sm text-zinc-900 dark:text-zinc-100 truncate transition-colors',
-                  habit.completed &&
-                    'text-zinc-500 line-through decoration-zinc-300 dark:decoration-zinc-700'
+                  'text-sm font-medium truncate transition-colors text-zinc-700 dark:text-zinc-200'
                 )}
               >
                 {habit.title}
               </h3>
-              <div
-                className={cn(
-                  'h-1.5 w-1.5 rounded-full',
-                  habit.color || 'bg-indigo-500'
-                )}
-              />
-            </div>
 
-            <div className='flex items-center gap-2 text-xs text-zinc-500'>
-              <span className='capitalize'>{habit.frequency}</span>
-              {habit.streak > 0 && (
-                <>
-                  <span>•</span>
-                  <span className='flex items-center gap-0.5 text-orange-500 font-medium'>
-                    <Flame className='h-3 w-3 fill-current' />
-                    {habit.streak}
-                  </span>
-                </>
+              {/* Minimal Streak - Just text */}
+              {habit.streak > 0 && !habit.completed && (
+                <span className='flex items-center gap-0.5 text-[10px] font-medium text-orange-500 opacity-80'>
+                  <Flame className='h-2.5 w-2.5 fill-current' />
+                  {habit.streak}
+                </span>
               )}
+            </div>
+            <div className='flex items-center gap-3 mt-1'>
+              <p className='text-[11px] text-zinc-400 font-medium capitalize truncate'>
+                {habit.frequency}
+              </p>
+
+              {/* 7-Day Micro-Heatmap */}
+              <div className='flex items-center gap-1'>
+                {[6, 5, 4, 3, 2, 1, 0].map((daysAgo) => {
+                  const date = subDays(new Date(), daysAgo);
+                  const isCompleted = habit.logs.some((l: any) =>
+                    isSameDay(new Date(l.date), date)
+                  );
+                  const isToday = daysAgo === 0;
+
+                  return (
+                    <div
+                      key={daysAgo}
+                      title={daysAgo === 0 ? 'Today' : `${daysAgo} days ago`}
+                      className={cn(
+                        'h-2 w-2 rounded-full transition-all duration-300',
+                        isCompleted
+                          ? habit.color || 'bg-indigo-500'
+                          : 'bg-zinc-200 dark:bg-zinc-800',
+                        isToday &&
+                          !isCompleted &&
+                          'ring-1 ring-zinc-300 dark:ring-zinc-600 ring-offset-1 dark:ring-offset-zinc-950'
+                      )}
+                    />
+                  );
+                })}
+              </div>
             </div>
           </div>
         </div>
 
-        {/* Right: Heatmap & Options */}
-        <div className='flex items-center gap-4'>
-          {/* Mini Heatmap (Discrete) */}
-          <div className='hidden md:flex items-center gap-1 opacity-40 group-hover:opacity-100 transition-opacity duration-300'>
-            {[4, 3, 2, 1, 0].map((daysAgo) => {
-              const date = subDays(new Date(), daysAgo);
-              const isCompleted = habit.logs.some((l: any) =>
-                isSameDay(new Date(l.date), date)
-              );
-              const isToday = daysAgo === 0;
-              return (
-                <div
-                  key={daysAgo}
-                  className={cn(
-                    'h-1.5 w-1.5 rounded-full transition-all',
-                    isCompleted
-                      ? habit.color || 'bg-indigo-500'
-                      : 'bg-zinc-200 dark:bg-zinc-800',
-                    isToday &&
-                      !isCompleted &&
-                      'ring-1 ring-zinc-300 dark:ring-zinc-600'
-                  )}
-                />
-              );
-            })}
-          </div>
+        {/* Controls - Always visible */}
 
-          {/* Menu Trigger */}
+        {/* Controls - Always visible */}
+        <div className='flex items-center'>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button
                 variant='ghost'
                 size='icon'
-                className='h-8 w-8 text-zinc-400 opacity-0 group-hover:opacity-100 transition-all hover:text-zinc-600 dark:hover:text-zinc-300'
+                className='h-7 w-7 text-zinc-300 hover:text-zinc-600 dark:hover:text-zinc-300'
               >
                 <MoreHorizontal className='h-4 w-4' />
               </Button>
