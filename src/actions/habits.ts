@@ -1,12 +1,12 @@
-'use server';
+"use server";
 
-import { auth } from '@/auth';
-import { db } from '@/server/db';
-import { habits, habitLogs } from '@/server/db/schema';
-import { eq, and, desc, gte, lte, sql } from 'drizzle-orm';
-import { revalidatePath } from 'next/cache';
-import { HabitSchema } from '@/lib/schemas';
-import { z } from 'zod';
+import { auth } from "@/auth";
+import { db } from "@/server/db";
+import { habits, habitLogs } from "@/server/db/schema";
+import { eq, and, desc } from "drizzle-orm";
+import { revalidatePath } from "next/cache";
+import { HabitSchema } from "@/lib/schemas";
+import { z } from "zod";
 import {
   startOfDay,
   endOfDay,
@@ -16,17 +16,19 @@ import {
   endOfMonth,
   subDays,
   isSameDay,
-} from 'date-fns';
+} from "date-fns";
+import { Pool } from "@neondatabase/serverless";
+import { drizzle } from "drizzle-orm/neon-serverless";
 
 export async function createHabit(data: z.infer<typeof HabitSchema>) {
   const session = await auth();
   if (!session?.user?.id) {
-    throw new Error('Unauthorized');
+    throw new Error("Unauthorized");
   }
 
   const validated = HabitSchema.safeParse(data);
   if (!validated.success) {
-    throw new Error('Invalid data');
+    throw new Error("Invalid data");
   }
 
   const { title, description, frequency, icon, color, startDate } =
@@ -42,19 +44,19 @@ export async function createHabit(data: z.infer<typeof HabitSchema>) {
     startDate: startDate || new Date(),
   });
 
-  revalidatePath('/dashboard');
+  revalidatePath("/dashboard");
 }
 
 export async function updateHabit(
   id: string,
-  data: Partial<z.infer<typeof HabitSchema>>
+  data: Partial<z.infer<typeof HabitSchema>>,
 ) {
   const session = await auth();
-  if (!session?.user?.id) throw new Error('Unauthorized');
+  if (!session?.user?.id) throw new Error("Unauthorized");
 
   const validated = HabitSchema.partial().safeParse(data);
   if (!validated.success) {
-    throw new Error('Invalid data');
+    throw new Error("Invalid data");
   }
 
   await db
@@ -65,36 +67,40 @@ export async function updateHabit(
     })
     .where(and(eq(habits.id, id), eq(habits.userId, session.user.id)));
 
-  revalidatePath('/dashboard');
+  revalidatePath("/dashboard");
 }
 
 export async function deleteHabit(id: string) {
   const session = await auth();
-  if (!session?.user?.id) throw new Error('Unauthorized');
+  if (!session?.user?.id) throw new Error("Unauthorized");
 
   await db
     .delete(habits)
     .where(and(eq(habits.id, id), eq(habits.userId, session.user.id)));
 
-  revalidatePath('/dashboard');
+  revalidatePath("/dashboard");
 }
 
 export async function logHabit(habitId: string, date: Date = new Date()) {
   const session = await auth();
-  if (!session?.user?.id) throw new Error('Unauthorized');
+  if (!session?.user?.id) throw new Error("Unauthorized");
 
   // Verify ownership
   const habit = await db.query.habits.findFirst({
     where: and(eq(habits.id, habitId), eq(habits.userId, session.user.id)),
   });
 
-  if (!habit) throw new Error('Habit not found');
+  if (!habit) throw new Error("Habit not found");
 
   const logDate = startOfDay(date);
 
   // Atomic toggle using transaction
   try {
-    await db.transaction(async (tx) => {
+    const pool = new Pool({
+      connectionString: process.env.DATABASE_URL,
+    });
+    const dbPool = drizzle(pool);
+    await dbPool.transaction(async (tx) => {
       // Try to insert (Toggle ON)
       try {
         await tx.insert(habitLogs).values({
@@ -105,14 +111,14 @@ export async function logHabit(habitId: string, date: Date = new Date()) {
         // If unique constraint violation, it means it already exists -> Delete it (Toggle OFF)
         // PostgreSQL error code 23505 is unique_violation
         if (
-          err.code === '23505' ||
-          err.message?.includes('violates unique constraint') ||
-          err.message?.includes('duplicate key value')
+          err.code === "23505" ||
+          err.message?.includes("violates unique constraint") ||
+          err.message?.includes("duplicate key value")
         ) {
           await tx
             .delete(habitLogs)
             .where(
-              and(eq(habitLogs.habitId, habitId), eq(habitLogs.date, logDate))
+              and(eq(habitLogs.habitId, habitId), eq(habitLogs.date, logDate)),
             );
         } else {
           // Re-throw other errors
@@ -121,11 +127,11 @@ export async function logHabit(habitId: string, date: Date = new Date()) {
       }
     });
   } catch (error) {
-    console.error('Failed to toggle habit log:', error);
-    throw new Error('Failed to update habit status');
+    console.error("Failed to toggle habit log:", error);
+    throw new Error("Failed to update habit status");
   }
 
-  revalidatePath('/dashboard');
+  revalidatePath("/dashboard");
 }
 
 export async function getHabits() {
@@ -144,19 +150,19 @@ export async function getHabits() {
   // And calculate current streak
   return userHabits.map((habit) => {
     const sortedLogs = habit.logs.sort(
-      (a, b) => b.date.getTime() - a.date.getTime()
+      (a, b) => b.date.getTime() - a.date.getTime(),
     );
     const today = startOfDay(new Date());
 
     // Check if completed for current period
     let completed = false;
-    if (habit.frequency === 'Daily') {
+    if (habit.frequency === "Daily") {
       completed = sortedLogs.some((l) => isSameDay(l.date, today));
-    } else if (habit.frequency === 'Weekly') {
+    } else if (habit.frequency === "Weekly") {
       const start = startOfWeek(today);
       const end = endOfWeek(today);
       completed = sortedLogs.some((l) => l.date >= start && l.date <= end);
-    } else if (habit.frequency === 'Monthly') {
+    } else if (habit.frequency === "Monthly") {
       const start = startOfMonth(today);
       const end = endOfMonth(today);
       completed = sortedLogs.some((l) => l.date >= start && l.date <= end);
@@ -167,7 +173,7 @@ export async function getHabits() {
     // For now, let's implement true Daily streak, and count for others.
 
     let streak = 0;
-    if (habit.frequency === 'Daily') {
+    if (habit.frequency === "Daily") {
       streak = calculateDailyStreak(sortedLogs.map((l) => l.date));
     } else {
       // For non-daily, just return total completions for now or 0
