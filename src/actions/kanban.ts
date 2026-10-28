@@ -1,6 +1,7 @@
 'use server';
 
 import { db } from '@/server/db';
+import { runInTransaction } from '@/server/db/transaction';
 import { boards, columns, tasks } from '@/server/db/schema';
 import { eq, and, asc } from 'drizzle-orm';
 import { revalidatePath } from 'next/cache';
@@ -184,12 +185,14 @@ export async function reorderColumns(boardId: string, columnIds: string[]) {
   });
   if (!board) throw new Error('Board not found');
 
-  // Perform bulk update of orders
-  await Promise.all(
-    columnIds.map((id, index) =>
-      db.update(columns).set({ order: index }).where(eq(columns.id, id))
-    )
-  );
+  await runInTransaction(async (tx) => {
+    for (const [index, id] of columnIds.entries()) {
+      await tx
+        .update(columns)
+        .set({ order: index })
+        .where(and(eq(columns.id, id), eq(columns.boardId, boardId)));
+    }
+  });
 
   revalidatePath(`/dashboard/kanban`);
 }
@@ -229,12 +232,14 @@ export async function createTask(
 export async function updateTaskOrder(columnId: string, taskIds: string[]) {
   await requireUser();
 
-  // Perform bulk update of orders
-  await Promise.all(
-    taskIds.map((id, index) =>
-      db.update(tasks).set({ columnId, order: index }).where(eq(tasks.id, id))
-    )
-  );
+  await runInTransaction(async (tx) => {
+    for (const [index, id] of taskIds.entries()) {
+      await tx
+        .update(tasks)
+        .set({ columnId, order: index })
+        .where(eq(tasks.id, id));
+    }
+  });
 
   revalidatePath(`/dashboard/kanban`);
 }
