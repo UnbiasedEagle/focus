@@ -75,6 +75,36 @@ export async function getBoards() {
 
 import { BoardSchema, ColumnSchema, TaskSchema } from '@/lib/schemas';
 
+async function requireOwnedBoard(boardId: string, userId: string) {
+  const board = await db.query.boards.findFirst({
+    where: and(eq(boards.id, boardId), eq(boards.userId, userId)),
+  });
+  if (!board) throw new Error('Board not found');
+  return board;
+}
+
+async function requireOwnedColumn(columnId: string, userId: string) {
+  const column = await db.query.columns.findFirst({
+    where: eq(columns.id, columnId),
+    with: { board: true },
+  });
+  if (!column || column.board.userId !== userId) {
+    throw new Error('Column not found');
+  }
+  return column;
+}
+
+async function requireOwnedTask(taskId: string, userId: string) {
+  const task = await db.query.tasks.findFirst({
+    where: eq(tasks.id, taskId),
+    with: { column: { with: { board: true } } },
+  });
+  if (!task || task.column.board.userId !== userId) {
+    throw new Error('Task not found');
+  }
+  return task;
+}
+
 export async function createBoard(name: string) {
   const user = await requireUser();
 
@@ -132,7 +162,8 @@ export async function updateBoard(boardId: string, name: string) {
 
 // --- Column Actions ---
 export async function createColumn(boardId: string, title: string) {
-  await requireUser();
+  const user = await requireUser();
+  await requireOwnedBoard(boardId, user.id);
 
   const validated = ColumnSchema.safeParse({ title });
   if (!validated.success) throw new Error(validated.error.issues[0].message);
@@ -156,14 +187,16 @@ export async function createColumn(boardId: string, title: string) {
 }
 
 export async function deleteColumn(columnId: string) {
-  await requireUser();
+  const user = await requireUser();
+  await requireOwnedColumn(columnId, user.id);
 
   await db.delete(columns).where(eq(columns.id, columnId));
   revalidatePath(`/dashboard/kanban`);
 }
 
 export async function updateColumn(columnId: string, title: string) {
-  await requireUser();
+  const user = await requireUser();
+  await requireOwnedColumn(columnId, user.id);
 
   const validated = ColumnSchema.safeParse({ title });
   if (!validated.success) throw new Error(validated.error.issues[0].message);
@@ -204,7 +237,8 @@ export async function createTask(
   description?: string,
   priority: 'Low' | 'Medium' | 'High' = 'Medium'
 ) {
-  await requireUser();
+  const user = await requireUser();
+  await requireOwnedColumn(columnId, user.id);
 
   const validated = TaskSchema.safeParse({ title, description, priority });
   if (!validated.success) throw new Error(validated.error.issues[0].message);
@@ -233,13 +267,7 @@ export async function updateTaskOrder(columnId: string, taskIds: string[]) {
   const user = await requireUser();
   if (taskIds.length === 0) return;
 
-  const column = await db.query.columns.findFirst({
-    where: eq(columns.id, columnId),
-    with: { board: true },
-  });
-  if (!column || column.board.userId !== user.id) {
-    throw new Error('Column not found');
-  }
+  await requireOwnedColumn(columnId, user.id);
 
   const uniqueTaskIds = [...new Set(taskIds)];
   const ownedTasks = await db.query.tasks.findMany({
@@ -266,7 +294,8 @@ export async function updateTaskOrder(columnId: string, taskIds: string[]) {
 }
 
 export async function deleteTask(taskId: string) {
-  await requireUser();
+  const user = await requireUser();
+  await requireOwnedTask(taskId, user.id);
 
   await db.delete(tasks).where(eq(tasks.id, taskId));
   revalidatePath(`/dashboard/kanban`);
@@ -278,7 +307,8 @@ export async function updateTask(
   description: string,
   priority: 'Low' | 'Medium' | 'High'
 ) {
-  await requireUser();
+  const user = await requireUser();
+  await requireOwnedTask(taskId, user.id);
 
   const validated = TaskSchema.safeParse({ title, description, priority });
   if (!validated.success) throw new Error(validated.error.issues[0].message);
