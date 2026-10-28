@@ -1,7 +1,7 @@
 'use server';
 
 import { db } from '@/server/db';
-import { pomodoroSessions } from '@/server/db/schema';
+import { pomodoroSessions, tasks } from '@/server/db/schema';
 import { eq, and, desc, isNotNull } from 'drizzle-orm';
 import { revalidatePath } from 'next/cache';
 import { auth } from '@/auth';
@@ -15,6 +15,14 @@ export async function startPomodoroSession(taskId?: string) {
   if (taskId) {
     const validated = z.string().uuid().safeParse(taskId);
     if (!validated.success) throw new Error('Invalid Task ID format');
+
+    const task = await db.query.tasks.findFirst({
+      where: eq(tasks.id, taskId),
+      with: { column: { with: { board: true } } },
+    });
+    if (!task || task.column.board.userId !== session.user.id) {
+      throw new Error('Task not found');
+    }
   }
 
   const [newSession] = await db
