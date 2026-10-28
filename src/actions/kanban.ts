@@ -3,7 +3,7 @@
 import { db } from '@/server/db';
 import { runInTransaction } from '@/server/db/transaction';
 import { boards, columns, tasks } from '@/server/db/schema';
-import { eq, and, asc } from 'drizzle-orm';
+import { eq, and, asc, inArray } from 'drizzle-orm';
 import { revalidatePath } from 'next/cache';
 import { auth } from '@/auth';
 import { requireUser } from '@/lib/auth-utils';
@@ -230,7 +230,28 @@ export async function createTask(
 }
 
 export async function updateTaskOrder(columnId: string, taskIds: string[]) {
-  await requireUser();
+  const user = await requireUser();
+  if (taskIds.length === 0) return;
+
+  const column = await db.query.columns.findFirst({
+    where: eq(columns.id, columnId),
+    with: { board: true },
+  });
+  if (!column || column.board.userId !== user.id) {
+    throw new Error('Column not found');
+  }
+
+  const uniqueTaskIds = [...new Set(taskIds)];
+  const ownedTasks = await db.query.tasks.findMany({
+    where: inArray(tasks.id, uniqueTaskIds),
+    with: { column: { with: { board: true } } },
+  });
+  if (
+    ownedTasks.length !== uniqueTaskIds.length ||
+    ownedTasks.some((task) => task.column.board.userId !== user.id)
+  ) {
+    throw new Error('Task not found');
+  }
 
   await runInTransaction(async (tx) => {
     for (const [index, id] of taskIds.entries()) {
